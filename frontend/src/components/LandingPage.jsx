@@ -1,5 +1,5 @@
 import React from 'react'
-import worldMap from '../assets/worldmap.png'
+import worldMap from '../assets/worldMap.png'
 import arrow_icon from '../assets/arrow_icon.svg'
 
 const LandingPage = () => {
