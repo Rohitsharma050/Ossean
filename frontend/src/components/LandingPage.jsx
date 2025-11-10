@@ -5,7 +5,7 @@ import arrow_icon from '../assets/arrow_icon.svg'
 const LandingPage = () => {
   return (
     <div className='bg-black min-h-screen'>
-      <div className='px-6 sm:px-12 md:px-24 lg:px-40 py-8 bg-black'>
+      <div className='px-6 sm:px-12 md:px-24 lg:px-47 py-8 bg-black'>
 
         {/* Navbar */}
         <div className='flex justify-between items-center flex-wrap gap-4'>
