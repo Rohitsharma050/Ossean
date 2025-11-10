@@ -1,5 +1,5 @@
 import React from 'react'
-import { feedback } from '../../../../EasyMed/Frontend/src/assets/assets'
+import { feedback } from '../assets/assets'
 import arrow_icon from '../assets/arrow_icon.svg'
 const Feedback = () => {
   return (
