@@ -1,6 +1,6 @@
 import React from 'react'
 import video from '../assets/video(1).mp4'
-import statue from '../assets/statue.png' // apni image ka path yaha daalna
+import statue from '../assets/statue.png' 
 
 const Working = () => {
   return (
@@ -39,7 +39,7 @@ const Working = () => {
       </div>
 
       {/* Optional subtle gradient overlay for better contrast */}
-      <div className='absolute inset-0 bg-gradient-to-b from-black/60 via-black/70 to-black/90'></div>
+      
     </div>
   )
 }
