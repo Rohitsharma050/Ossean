@@ -1,8 +1,7 @@
 import React from 'react'
+import statue from '../assets/statue.png'
 import video from '../assets/video(1).mp4'
-import statue from '../assets/statue.png' 
-
-const Working = () => {
+const Explaination = () => {
   return (
     <div className='relative bg-black min-h-screen flex flex-col justify-center items-center px-4  sm:py-20 overflow-hidden'>
       {/* Background Image with subtle visibility */}
@@ -44,4 +43,4 @@ const Working = () => {
   )
 }
 
-export default Working
+export default Explaination

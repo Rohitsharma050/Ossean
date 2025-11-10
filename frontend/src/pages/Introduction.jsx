@@ -2,12 +2,12 @@ import React from 'react'
 import LandingPage from '../components/LandingPage'
 import Feedback from '../components/Feedback'
 import Footer from '../components/Footer'
-import Working from '../components/working'
+import Explaination from '../components/Explaination'
 const Introduction = () => {
   return (
     <div className=''>
       <LandingPage/>
-      <Working/>
+      <Explaination/>
       <Feedback/>
       <Footer/>
     </div>
