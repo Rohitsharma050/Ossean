@@ -1,7 +1,10 @@
 import React from 'react'
 import { feedback } from '../assets/assets'
 import arrow_icon from '../assets/arrow_icon.svg'
+import { useNavigate } from 'react-router-dom'
 const Feedback = () => {
+
+  const navigate = useNavigate()
   return (
     <div className='flex flex-col bg-black justify-center items-center px-4 sm:px-8 md:px-16 py-16 sm:py-20 text-center'>
       {/* Heading Section */}
@@ -43,7 +46,7 @@ const Feedback = () => {
 
       <p className='text-neutral-400 py-8  '>Join hundereds of developers already using Ossean</p>
        <div className='bg-white flex items-center hover:scale-105 transition-all duration-300 shadow-md'>
-                  <button className='px-5 py-1.5 text-black font-medium'>Get Started Today</button>
+                  <button onClick={()=>{navigate('/login')}} className='px-5 py-1.5 text-black font-medium'>Get Started Today</button>
                   <img src={arrow_icon} className='w-5 h-5 mr-3' alt="arrow" />
         </div>
     </div>
