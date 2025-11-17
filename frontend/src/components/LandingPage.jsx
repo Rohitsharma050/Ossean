@@ -1,10 +1,12 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import worldMap from '../assets/worldMap.png'
 import arrow_icon from '../assets/arrow_icon.svg'
 import { useNavigate } from 'react-router-dom'
+import { Appcontext } from '../context/AppContext'
 const LandingPage = () => {
 
   const navigate = useNavigate()
+  const {token} = useContext(Appcontext)
 
   return (
     <div className='bg-black min-h-screen'>
@@ -16,7 +18,7 @@ const LandingPage = () => {
             Oss<span className='text-neutral-500 tracking-tight text-3xl'>ean</span>
           </h1>
 
-          <div onClick={()=>{navigate('/login')}} className='bg-white md:flex hidden items-center hover:scale-105 transition-all duration-300 shadow-md'>
+          <div onClick={() => navigate(token ? '/home' : '/login')}  className='bg-white md:flex hidden items-center hover:scale-105 transition-all duration-300 shadow-md'>
             <button className='px-5 py-1.5 text-black font-medium'>Get Started</button>
             <img src={arrow_icon} className='w-5 h-5 mr-3' alt="arrow" />
           </div>
@@ -45,7 +47,7 @@ const LandingPage = () => {
 
             {/* Button */}
             <div className='bg-white flex items-center w-fit mx-auto lg:mx-0 hover:scale-105 transition-all duration-300 shadow-md'>
-              <button onClick={()=>{navigate('/login')}}  className='px-5 py-1.5 text-black font-medium'>Get Started</button>
+              <button onClick={() => navigate(token ? '/home' : '/login')}  className='px-5 py-1.5 text-black font-medium'>Get Started</button>
               <img src={arrow_icon} className='w-5 h-5 mr-3' alt="arrow" />
             </div>
           </div>

@@ -13,7 +13,7 @@ const AppContextProvider = (props)=>{
     const signOut = ()=>{
         setToken(false)
         localStorage.removeItem("token")
-        navigate('/login')
+        navigate('/')
     } 
     
 
