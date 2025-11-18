@@ -78,7 +78,7 @@ export const repo = [
     tag: ['music', 'streaming', 'player'],
     stars: '18k',
     fork: '2.1k',
-    popularity: 'Super Popular'
+    popularity: 'Famous'
   },
   {
     name: 'Learnify',
@@ -110,7 +110,7 @@ export const repo = [
     tag: ['chat', 'realtime', 'socket'],
     stars: '14k',
     fork: '960',
-    popularity: 'Super Popular'
+    popularity: 'Famous'
   },
   {
     name: 'QuickPay',
@@ -134,7 +134,7 @@ export const repo = [
     tag: ['travel', 'booking', 'trip'],
     stars: '15k',
     fork: '1.8k',
-    popularity: 'Super Popular'
+    popularity: 'Famous'
   },
   {
     name: 'SkillBoost',
@@ -174,7 +174,7 @@ export const repo = [
     tag: ['food', 'delivery', 'restaurant'],
     stars: '13k',
     fork: '1.1k',
-    popularity: 'Super Popular'
+    popularity: 'Famous'
   },
   {
     name: 'CodeSphere',
@@ -214,6 +214,6 @@ export const repo = [
     tag: ['events', 'booking', 'tickets'],
     stars: '11.5k',
     fork: '1.3k',
-    popularity: 'Super Popular'
+    popularity: 'Famous'
   }
 ];
