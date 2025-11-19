@@ -1,66 +1,133 @@
-import axios from 'axios'
-import { createContext, useContext,  useState } from 'react'
-import { toast } from 'react-toastify'
-import { useNavigate } from 'react-router-dom'
-export const Appcontext = createContext()
+import axios from "axios";
+import { createContext, useState, useEffect } from "react";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
-const AppContextProvider = (props)=>{
+export const Appcontext = createContext();
 
-    const navigate = useNavigate()
-    const backendUrl = import.meta.env.VITE_BACKEND_URL
-    const [token ,setToken] = useState(localStorage.getItem('token')?localStorage.getItem('token'):false)
+const AppContextProvider = (props) => {
+  const navigate = useNavigate();
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
-    const signOut = ()=>{
-        setToken(false)
-        localStorage.removeItem("token")
-        navigate('/')
-    } 
+  const [token, setToken] = useState(
+    localStorage.getItem("token") ? localStorage.getItem("token") : false
+  );
 
-    const sendSuggestion  = async (name,email,suggestion)=>{
-        try {
-            const {data} = await axios.post(backendUrl+'/api/user/suggestion',{name,email,suggestion},{headers:{token}})
-            if(data.success)
-            {
-                console.log(data.message)
-                toast.success(data.message)
-            }
-            else{
-                toast.error(data.message)
-            }
-        } catch (error) {
-            
-            console.log(error.message)
-             toast.error(error.message)
-        }
+  const [repoList, setRepoList] = useState([]);
+  const [language, setLanguage] = useState("All Languages");
+  const [popularity, setPopularity] = useState("All Popularity");
+
+  const signOut = () => {
+    setToken(false);
+    localStorage.removeItem("token");
+    navigate("/");
+  };
+
+  const getPopularityQuery = () => {
+    if (popularity === "Legendary") return "stars:>50000+forks:>10000";
+    if (popularity === "Famous") return "stars:10000..25000+forks:1000..5000";
+    if (popularity === "Popular") return "stars:1000..10000+forks:100..1000";
+    if (popularity === "Rising") return "stars:<1000+forks:<100";
+    return "stars:>0"; 
+  };
+
+  const getRepoList = async () => {
+    try {
+      let q = getPopularityQuery();
+
+      if (language !== "All Languages") {
+        q = `language:${language}+${q}`;
+      }
+
+      const url = `https://api.github.com/search/repositories?q=${q}&sort=stars&order=desc`;
+
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (!data.items) {
+        setRepoList([]);
+        return;
+      }
+
+      const finalData = data.items.slice(0, 30).map((repo) => ({
+  name: repo.name,
+  language: repo.language,
+  tag: repo.topics,
+  stars: repo.stargazers_count,
+  fork: repo.forks_count,
+  owner: { avatar_url: repo.owner.avatar_url },
+  html_url: repo.html_url,
+  popularity:
+    repo.stargazers_count > 50000
+      ? "Legendary"
+      : repo.stargazers_count > 10000
+      ? "Famous"
+      : repo.stargazers_count > 1000
+      ? "Popular"
+      : "Rising",
+}));
+
+
+      setRepoList(finalData);
+    } catch (error) {
+      console.log("API ERROR:", error);
+      setRepoList([]);
     }
-    
-    const reportBug =  async (name,email,report,screenshot)=>{
-        try {
-            const {data} = await axios.post(backendUrl+'/api/user/bug',{name,email,report,screenshot},{headers:{token}})
-            if(data.success)
-            {
-                console.log()
-                toast.success(data.message)
-            }
-            else{
-                toast.error(data.error)
-            }
-        } catch (error) {
-            console.log(error.message)
-            toast.error(error.message)
-        }
-        
+  };
+
+  useEffect(() => {
+    if (token) {
+      getRepoList();
     }
+  }, [language, popularity]);
 
-    const values = {
-
-        backendUrl,token,signOut,setToken,sendSuggestion,reportBug
+  const sendSuggestion = async (name, email, suggestion) => {
+    try {
+      const { data } = await axios.post(
+        backendUrl + "/api/user/suggestion",
+        { name, email, suggestion },
+        { headers: { token } }
+      );
+      data.success ? toast.success(data.message) : toast.error(data.message);
+    } catch (err) {
+      toast.error(err.message);
     }
-    return (
-        <Appcontext.Provider value={values}>
-            {props.children}
-        </Appcontext.Provider>
-    )
-}
+  };
 
-export default AppContextProvider
+  const reportBug = async (name, email, report, screenshot) => {
+    try {
+      const { data } = await axios.post(
+        backendUrl + "/api/user/bug",
+        { name, email, report, screenshot },
+        { headers: { token } }
+      );
+      data.success ? toast.success(data.message) : toast.error(data.error);
+    } catch (err) {
+      toast.error(err.message);
+    }
+  };
+
+  return (
+    <Appcontext.Provider
+      value={{
+        backendUrl,
+        token,
+        signOut,
+        setToken,
+        sendSuggestion,
+        reportBug,
+        repoList,
+        setRepoList,
+        language,
+        setLanguage,
+        popularity,
+        setPopularity,
+        getRepoList,
+      }}
+    >
+      {props.children}
+    </Appcontext.Provider>
+  );
+};
+
+export default AppContextProvider;
