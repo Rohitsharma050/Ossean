@@ -12,7 +12,7 @@ export default function Layout() {
     
   return token &&  (
     <div
-      className="relative min-h-screen bg-black bg-cover bg-center"
+      className="relative min-h-screen bg-black   bg-center"
       style={{ backgroundImage: `url(${bgImage})`, opacity:60 }}
     >
       <Navbar />
