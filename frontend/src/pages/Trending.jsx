@@ -1,8 +1,11 @@
-import React from 'react'
+import React, { useContext, useState } from 'react'
+import { Appcontext } from '../context/AppContext'
 
 const Trending = () => {
-  return (
-    <div className='text-white'>Trending</div>
+(
+ <div className='text-white'>
+    trending
+    </div>
   )
 }
 

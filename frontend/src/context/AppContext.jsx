@@ -16,12 +16,50 @@ const AppContextProvider = (props) => {
   const [repoList, setRepoList] = useState([]);
   const [language, setLanguage] = useState("All Languages");
   const [popularity, setPopularity] = useState("All Popularity");
+  const [repoName,setRepoName] = useState("")
+  const [searchList,setSearchList] = useState([])
+  const [randomRepo,setRandomRepo] = useState([])
+
+
 
   const signOut = () => {
     setToken(false);
     localStorage.removeItem("token");
     navigate("/");
   };
+
+  const getRandomRepo = async ()=>{
+    const url = `https://api.github.com/search/repositories?q=stars:1000..10000&sort=stars&order=desc
+`;
+
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (!data.items) {
+        setRandomRepo([]);
+        return;
+      }
+
+  const finalData = data.items.slice(0, 30).map((repo) => ({
+  name: repo.name,
+  language: repo.language,
+  tag: repo.topics,
+  stars: repo.stargazers_count,
+  fork: repo.forks_count,
+  owner: { avatar_url: repo.owner.avatar_url },
+  html_url: repo.html_url,
+  popularity:
+    repo.stargazers_count > 50000
+      ? "Legendary"
+      : repo.stargazers_count > 10000
+      ? "Famous"
+      : repo.stargazers_count > 1000
+      ? "Popular"
+      : "Rising",
+}));
+
+setRandomRepo(finalData)
+  }
 
   const getPopularityQuery = () => {
     if (popularity === "Legendary") return "stars:>50000+forks:>10000";
@@ -49,7 +87,7 @@ const AppContextProvider = (props) => {
         return;
       }
 
-      const finalData = data.items.slice(0, 30).map((repo) => ({
+  const finalData = data.items.slice(0, 30).map((repo) => ({
   name: repo.name,
   language: repo.language,
   tag: repo.topics,
@@ -75,11 +113,56 @@ const AppContextProvider = (props) => {
     }
   };
 
-  useEffect(() => {
-    if (token) {
-      getRepoList();
+const getSearchList = async () => {
+  if (!repoName.trim()) {
+    setSearchList(randomRepo)
+    return
+  }
+
+  try {
+    const url = `https://api.github.com/search/repositories?q=${repoName}+in:name`
+    const response = await fetch(url)
+    const data = await response.json()
+
+    if (!data.items) {
+      setSearchList(randomRepo)
+      return
     }
-  }, [language, popularity]);
+
+    const exactMatch = data.items.filter(
+      repo => repo.name.toLowerCase() === repoName.toLowerCase()
+    )
+
+    if (exactMatch.length === 0) {
+      setSearchList(randomRepo)
+      return
+    }
+
+    const finalData = exactMatch.slice(0, 30).map((repo) => ({
+      name: repo.name,
+      language: repo.language,
+      tag: repo.topics,
+      stars: repo.stargazers_count,
+      fork: repo.forks_count,
+      owner: { avatar_url: repo.owner.avatar_url },
+      html_url: repo.html_url,
+      popularity:
+        repo.stargazers_count > 50000
+          ? "Legendary"
+          : repo.stargazers_count > 10000
+          ? "Famous"
+          : repo.stargazers_count > 1000
+          ? "Popular"
+          : "Rising",
+    }))
+
+    setSearchList(finalData)
+
+  } catch (error) {
+    console.log("Search API error:", error)
+    setSearchList(randomRepo)
+  }
+}
 
   const sendSuggestion = async (name, email, suggestion) => {
     try {
@@ -107,6 +190,30 @@ const AppContextProvider = (props) => {
     }
   };
 
+  useEffect(() => {
+  if (token) {
+    getRandomRepo()
+    console.log(randomRepo)
+  }
+}, [token])
+
+  useEffect(()=>{
+    if(token){
+      getRepoList()
+    }
+  },[language,popularity])
+
+useEffect(() => {
+  if (!token) return
+
+  const timer = setTimeout(() => {
+    getSearchList()
+  }, 600)
+
+  return () => clearTimeout(timer)
+}, [repoName])
+
+
   return (
     <Appcontext.Provider
       value={{
@@ -123,6 +230,11 @@ const AppContextProvider = (props) => {
         popularity,
         setPopularity,
         getRepoList,
+        searchList,setSearchList,
+        repoName,setRepoName,
+        randomRepo
+
+        
       }}
     >
       {props.children}
