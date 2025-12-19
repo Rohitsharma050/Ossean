@@ -190,6 +190,15 @@ const getSearchList = async () => {
     }
   };
 
+  const getTrendingRepo = async ()=>{
+    try {
+      const response = await fetch()
+      
+    } catch (error) {
+      
+    }
+  }
+
   useEffect(() => {
   if (token) {
     getRandomRepo()

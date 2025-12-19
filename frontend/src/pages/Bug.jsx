@@ -10,11 +10,10 @@ const Bug = () => {
 
   const convertToBase64 = (e) => {
     const file = e.target.files[0]
+    if (!file) return
     const reader = new FileReader()
     reader.readAsDataURL(file)
-    reader.onload = () => {
-      setScreenshot(reader.result)
-    }
+    reader.onload = () => setScreenshot(reader.result)
   }
 
   const onSubmitHandler = (e) => {
@@ -23,83 +22,73 @@ const Bug = () => {
   }
 
   return (
-    <div className="flex justify-center items-center px-4 py-6 w-full">
-      
+    <div className="min-h-screen flex justify-center items-start
+                    pt-24 pb-10 px-4 sm:px-6">
+
       <div
         className="
-          bg-black/60 backdrop-blur-md p-6 sm:p-10 
-          mb-6 rounded-xl 
-          w-full max-w-xl 
-          shadow-xl border border-white/20
+          bg-black/60 backdrop-blur-md
+          p-5 sm:p-8
+          w-full max-w-xl
+          rounded-xl shadow-xl
+          border border-white/20
         "
       >
-        <h2 className="text-white text-3xl font-medium text-center mb-6">
-          Report
+        <h2 className="text-white text-2xl sm:text-3xl font-medium text-center mb-6">
+          Report a Bug
         </h2>
 
-        <form className="flex flex-col space-y-5" onSubmit={onSubmitHandler}>
-
-          <input 
+        <form
+          className="flex flex-col gap-4 sm:gap-5"
+          onSubmit={onSubmitHandler}
+        >
+          <input
             type="text"
             placeholder="Name"
             value={name}
-            onChange={(e)=>setName(e.target.value)}
-            className="
-              border border-white/40 bg-black/30 text-white 
-              placeholder-neutral-500 px-3 py-3 
-              rounded-md focus:outline-none focus:border-white
-            "
+            onChange={(e) => setName(e.target.value)}
+            className="input-style"
           />
 
-          <input 
+          <input
             type="email"
             placeholder="Wanna hear back? Add your email"
             value={email}
-            onChange={(e)=>setEmail(e.target.value)}
-            className="
-              border border-white/40 bg-black/30 text-white 
-              placeholder-neutral-500 px-3 py-3 
-              rounded-md focus:outline-none focus:border-white
-            "
+            onChange={(e) => setEmail(e.target.value)}
+            className="input-style"
           />
 
-          <textarea 
+          <textarea
             rows="5"
             placeholder="Explain the bug you have encountered..."
             value={report}
-            onChange={(e)=>setReport(e.target.value)}
-            className="
-              border border-white/40 bg-black/30 text-white 
-              placeholder-neutral-500 px-3 py-3 
-              rounded-md focus:outline-none focus:border-white
-            "
-          ></textarea>
+            onChange={(e) => setReport(e.target.value)}
+            className="input-style resize-none"
+          />
 
           <input
             type="file"
             accept="image/*"
-            onChange={(e)=>convertToBase64(e)}
+            onChange={convertToBase64}
             className="
-              border border-white/40 bg-black/30 text-white 
-              placeholder-neutral-500 px-3 py-3 rounded-md 
-              file:bg-white file:text-black 
-              file:px-4 file:py-2 file:rounded-md 
-              file:border-none file:mr-4 
-              focus:outline-none focus:border-white
+              input-style
+              file:bg-white file:text-black
+              file:px-3 file:py-2 file:rounded-md
+              file:border-none file:mr-3
+              text-sm
             "
           />
 
-          <button 
+          <button
             type="submit"
             className="
-              bg-gray-800 text-white py-3 rounded-lg 
-              hover:bg-white/90 hover:text-black 
+              mt-2 bg-gray-800 text-white py-3 rounded-lg
+              hover:bg-white/90 hover:text-black
               transition font-medium
             "
           >
-            Send Suggestion
+            Send Report
           </button>
-
         </form>
       </div>
     </div>
