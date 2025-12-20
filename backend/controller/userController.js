@@ -86,96 +86,113 @@ const loginUser = async (req, res) => {
   }
 };
 
-//APi for sending suggestion from user
-
-const sendSuggestion = async (req, res) => {
+// ================= SEND SUGGESTION =================
+ const sendSuggestion = async (req, res) => {
   try {
     const { name, email, suggestion } = req.body;
+
     if (!suggestion) {
-      res.json({
+      return res.status(400).json({
         success: false,
         message: "Please give some suggestion",
       });
     }
+
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: "rohitsharmasa120111@gmail.com",
-        pass: "dkba ocqy bnrx xzel",
+        user: process.env.EMAIL,
+        pass: process.env.EMAIL_PASSWORD,
+      },
+      tls: {
+        rejectUnauthorized: false,
       },
     });
 
     await transporter.sendMail({
-      from: email,
-      to: "rohitsharmasa120111@gmail.com",
+      from: `"Ossean" <${process.env.EMAIL}>`,
+      to: process.env.EMAIL,
+      replyTo: email,
       subject: "New Suggestion Received",
-      html: `<h2>New Suggestion</h2>
+      html: `
+        <h2>New Suggestion</h2>
         <p><b>Name:</b> ${name}</p>
         <p><b>Email:</b> ${email}</p>
-        <p><b>Message:</b> ${suggestion}</p>`,
+        <p><b>Message:</b> ${suggestion}</p>
+      `,
     });
 
-    res.json({
+    return res.json({
       success: true,
       message: "Suggestion sent successfully",
     });
+
   } catch (error) {
-    console.log(error.message);
-    res.json({
+    console.error("SUGGESTION MAIL ERROR:", error);
+    return res.status(500).json({
       success: false,
       message: "Error sending your suggestion",
     });
   }
 };
 
-//API FOR REPORTING A BUG
-const reportBug = async (req, res) => {
+// ================= REPORT BUG =================
+ const reportBug = async (req, res) => {
   try {
     const { name, email, report, screenshot } = req.body;
+
     if (!report) {
-      res.json({
+      return res.status(400).json({
         success: false,
-        message: "Please write something about Bug",
+        message: "Please write something about the bug",
       });
     }
-    const transporter = createTransport({
+
+    const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: "rohitsharmasa120111@gmail.com",
-        pass: "dkba ocqy bnrx xzel",
+        user: process.env.EMAIL,
+        pass: process.env.EMAIL_PASSWORD,
+      },
+      tls: {
+        rejectUnauthorized: false,
       },
     });
 
     await transporter.sendMail({
-      from: email,
-      to: "rohitsharmasa120111@gmail.com",
+      from: `"Ossean" <${process.env.EMAIL}>`,
+      to: process.env.EMAIL,
+      replyTo: email,
       subject: "New Bug Report",
       html: `
-    <h2>New Bug Report</h2>
-    <p><b>Name:</b> ${name}</p>
-    <p><b>Email:</b> ${email}</p>
-    <p><b>Message:</b> ${report}</p>
-    <p><b>Screenshot Attached Below</b></p>
-  `,
-  attachments: screenshot ? [
-    {
-      filename: "screenshot.png",
-      content: screenshot.split("base64,")[1], 
-      encoding: "base64",
-    },
-  ]:[]
+        <h2>New Bug Report</h2>
+        <p><b>Name:</b> ${name}</p>
+        <p><b>Email:</b> ${email}</p>
+        <p><b>Message:</b> ${report}</p>
+      `,
+      attachments: screenshot
+        ? [
+            {
+              filename: "screenshot.png",
+              content: screenshot.split("base64,")[1],
+              encoding: "base64",
+            },
+          ]
+        : [],
     });
 
-    res.json({
+    return res.json({
       success: true,
-      message: "Report sent successfully",
+      message: "Bug report sent successfully",
     });
+
   } catch (error) {
-    console.log(error.message);
-    res.json({
+    console.error("BUG REPORT MAIL ERROR:", error);
+    return res.status(500).json({
       success: false,
       message: "Error sending your report",
     });
   }
 };
+
 export { registerUser, loginUser, sendSuggestion, reportBug };

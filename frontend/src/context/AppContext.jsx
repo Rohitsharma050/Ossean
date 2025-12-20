@@ -190,14 +190,6 @@ const getSearchList = async () => {
     }
   };
 
-  const getTrendingRepo = async ()=>{
-    try {
-      const response = await fetch()
-      
-    } catch (error) {
-      
-    }
-  }
 
   useEffect(() => {
   if (token) {
@@ -210,7 +202,7 @@ const getSearchList = async () => {
     if(token){
       getRepoList()
     }
-  },[language,popularity])
+  },[language,popularity,token])
 
 useEffect(() => {
   if (!token) return

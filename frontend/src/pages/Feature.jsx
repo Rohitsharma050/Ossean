@@ -10,6 +10,9 @@ const Feature = () => {
   const onSubmitHandler = (e) => {
     e.preventDefault()
     sendSuggestion(name, email, suggestion)
+    setSuggestion("")
+    setEmail("")
+    setName("")
   }
 
   return (
@@ -35,7 +38,7 @@ const Feature = () => {
         >
           <input
             type="text"
-            placeholder="Name"
+            placeholder="Name (Optional)"
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="input-style"
@@ -43,7 +46,7 @@ const Feature = () => {
 
           <input
             type="email"
-            placeholder="Wanna hear back? Add your email"
+            placeholder="Wanna hear back? Add your email (Optional)"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="input-style"

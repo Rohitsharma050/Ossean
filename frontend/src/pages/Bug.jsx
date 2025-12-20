@@ -19,6 +19,10 @@ const Bug = () => {
   const onSubmitHandler = (e) => {
     e.preventDefault()
     reportBug(name, email, report, screenshot)
+    setEmail("")
+    setName("")
+    setReport("")
+    setScreenshot("")
   }
 
   return (
@@ -44,7 +48,7 @@ const Bug = () => {
         >
           <input
             type="text"
-            placeholder="Name"
+            placeholder="Name (Optional)"
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="input-style"
@@ -52,7 +56,7 @@ const Bug = () => {
 
           <input
             type="email"
-            placeholder="Wanna hear back? Add your email"
+            placeholder="Wanna hear back? Add your email (Optional)"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="input-style"
