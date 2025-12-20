@@ -1,20 +1,21 @@
-import express from "express"
-import 'dotenv/config'
-import cors from 'cors'
-import connectDb from './config/mongodb.js'
-import userRouter from "./routes/userRoute.js"
-const app = express()
-app.use(express.json({ limit: "10mb" }));  
-app.use(express.urlencoded({ limit: "10mb", extended: true }));
-app.use(cors())
-connectDb()
-const port = process.env.PORT || 3000
-app.get('/',(_req,res)=>{
-   return res.write("Ji boliye")
-})
+import express from "express";
+import 'dotenv/config';
+import cors from 'cors';
+import connectDb from './config/mongodb.js';
+import userRouter from "./routes/userRoute.js";
 
-//localhost:3000/api/user/
-app.use('/api/user',userRouter)
-app.listen(port,()=>{
-    console.log('started')
-})
+const app = express();
+
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ limit: "10mb", extended: true }));
+app.use(cors());
+
+connectDb();
+
+const port = process.env.PORT || 3000;
+
+app.use('/api/user', userRouter);
+
+app.listen(port, '0.0.0.0', () => {
+    console.log(`Server running on port ${port}`);
+});
