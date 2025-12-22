@@ -4,7 +4,7 @@ import validator from "validator";
 import userModel from "../model/userModel.js";
 import jwt from "jsonwebtoken";
 import nodemailer, { createTransport } from "nodemailer";
-
+import { OAuth2Client } from "google-auth-library";
 //Api for register the user
 const registerUser = async (req, res) => {
   try {
@@ -85,6 +85,69 @@ const loginUser = async (req, res) => {
     res.json({ success: false, message: error.message });
   }
 };
+
+// API FOR GOOGLE LOGIN 
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+const googleLogin = async (req, res) => {
+  try {
+    const { googleToken } = req.body;
+
+    if (!googleToken) {
+      return res.status(400).json({
+        success: false,
+        message: "Google token missing",
+      });
+    }
+
+    const ticket = await client.verifyIdToken({
+      idToken: googleToken,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+
+    const { email, name, sub, email_verified } = payload;
+
+    if (!email_verified) {
+      return res.status(401).json({
+        success: false,
+        message: "Email not verified by Google",
+      });
+    }
+
+    let user = await userModel.findOne({ email });
+
+    if (!user) {
+      user = await userModel.create({
+        name,
+        email,
+        password: null,
+      });
+    }
+
+    const token = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    res.status(200).json({
+      success: true,
+      token,
+      user,
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Google login failed",
+    });
+  }
+};
+
+export default googleLogin;
 
 // ================= SEND SUGGESTION =================
  const sendSuggestion = async (req, res) => {
@@ -195,4 +258,4 @@ const loginUser = async (req, res) => {
   }
 };
 
-export { registerUser, loginUser, sendSuggestion, reportBug };
+export { registerUser, loginUser, sendSuggestion, reportBug,googleLogin };
