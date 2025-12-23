@@ -13,7 +13,6 @@ const sendEmail = async (templateParams) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Origin": "http://localhost",
       },
       body: JSON.stringify({
         service_id: process.env.EMAILJS_SERVICE_ID,
