@@ -22,7 +22,7 @@ const Bug = () => {
     setEmail("")
     setName("")
     setReport("")
-    setScreenshot("")
+    setScreenshot(null)
   }
 
   return (
