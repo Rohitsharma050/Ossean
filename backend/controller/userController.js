@@ -1,120 +1,113 @@
-import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import validator from "validator";
 import userModel from "../model/userModel.js";
 import jwt from "jsonwebtoken";
-import nodemailer, { createTransport } from "nodemailer";
 import { OAuth2Client } from "google-auth-library";
-//Api for register the user
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+const sendEmail = async (templateParams) => {
+  const response = await fetch(
+    "https://api.emailjs.com/api/v1.0/email/send",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Origin": "http://localhost",
+      },
+      body: JSON.stringify({
+        service_id: process.env.EMAILJS_SERVICE_ID,
+        template_id: process.env.EMAILJS_TEMPLATE_ID,
+        user_id: process.env.EMAILJS_PUBLIC_KEY,
+        template_params: templateParams,
+      }),
+    }
+  );
+
+  const text = await response.text();
+
+  if (!response.ok) {
+    console.error("EMAILJS ERROR:", text);
+    throw new Error("EmailJS failed");
+  }
+
+  console.log("EMAILJS SUCCESS:", text);
+};
+
+
 const registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
-    if (!name || !email || !password) {
-      res.json({
-        success: false,
-        message: "Missing Required Fields",
-      });
-    }
-    if (!validator.isEmail(email)) {
-      res.json({
-        success: false,
-        message: "Invalid Email",
-      });
-    }
-    if (password.length < 8) {
-      res.json({
-        success: false,
-        message: "Please Enter a strong password",
-      });
-    }
+
+    if (!name || !email || !password)
+      return res.json({ success: false, message: "Missing Required Fields" });
+
+    if (!validator.isEmail(email))
+      return res.json({ success: false, message: "Invalid Email" });
+
+    if (password.length < 8)
+      return res.json({ success: false, message: "Please enter a strong password" });
+
+    const exists = await userModel.findOne({ email });
+    if (exists)
+      return res.json({ success: false, message: "User already exists" });
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const data = {
+
+    const user = await userModel.create({
       name,
       email,
       password: hashedPassword,
-    };
-
-    const newUser = new userModel(data);
-    const user = await newUser.save();
-
-    const payload = { id: user._id };
-    const token = jwt.sign(payload, process.env.JWT_SECRET);
-    res.json({
-      success: true,
-      token,
     });
+
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+
+    res.json({ success: true, token });
+
   } catch (error) {
-    console.log(error.message);
-    res.json({
-      success: false,
-      message: error.message,
-    });
+    res.json({ success: false, message: error.message });
   }
 };
-
-//api for user login
 
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    if (!email || !password) {
+    if (!email || !password)
       return res.json({ success: false, message: "Missing Required Fields" });
-    }
 
-    if (!validator.isEmail(email)) {
+    if (!validator.isEmail(email))
       return res.json({ success: false, message: "Invalid Email" });
-    }
 
-    const user = await userModel.findOne({ email }); // FIXED
-    if (!user) {
-      return res.json({ success: false, message: "User Not Found" });
-    }
+    const user = await userModel.findOne({ email });
+    if (!user || !user.password)
+      return res.json({ success: false, message: "Invalid credentials" });
 
-    const isMatched = await bcrypt.compare(password, user.password);
-    if (!isMatched) {
+    const match = await bcrypt.compare(password, user.password);
+    if (!match)
       return res.json({ success: false, message: "Incorrect Password" });
-    }
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
 
     res.json({ success: true, token });
+
   } catch (error) {
-    console.log(error.message);
     res.json({ success: false, message: error.message });
   }
 };
 
-// API FOR GOOGLE LOGIN 
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-
 const googleLogin = async (req, res) => {
   try {
     const { googleToken } = req.body;
-
-    if (!googleToken) {
-      return res.status(400).json({
-        success: false,
-        message: "Google token missing",
-      });
-    }
 
     const ticket = await client.verifyIdToken({
       idToken: googleToken,
       audience: process.env.GOOGLE_CLIENT_ID,
     });
 
-    const payload = ticket.getPayload();
-
-    const { email, name, sub, email_verified } = payload;
-
-    if (!email_verified) {
-      return res.status(401).json({
-        success: false,
-        message: "Email not verified by Google",
-      });
-    }
+    const { email, name, email_verified } = ticket.getPayload();
+    if (!email_verified)
+      return res.json({ success: false, message: "Email not verified" });
 
     let user = await userModel.findOne({ email });
 
@@ -122,140 +115,67 @@ const googleLogin = async (req, res) => {
       user = await userModel.create({
         name,
         email,
-        password: null,
+        password: "__GOOGLE_USER__",
       });
     }
 
-    const token = jwt.sign(
-      { userId: user._id },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
-
-    res.status(200).json({
-      success: true,
-      token,
-      user,
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
     });
 
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      success: false,
-      message: "Google login failed",
-    });
+    res.json({ success: true, token, user });
+
+  } catch {
+    res.json({ success: false, message: "Google login failed" });
   }
 };
 
-export default googleLogin;
-
-// ================= SEND SUGGESTION =================
- const sendSuggestion = async (req, res) => {
+const sendSuggestion = async (req, res) => {
   try {
     const { name, email, suggestion } = req.body;
 
-    if (!suggestion) {
-      return res.status(400).json({
-        success: false,
-        message: "Please give some suggestion",
-      });
-    }
+    if (!suggestion)
+      return res.json({ success: false, message: "Suggestion required" });
 
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL,
-        pass: process.env.EMAIL_PASSWORD,
-      },
-      tls: {
-        rejectUnauthorized: false,
-      },
+    await sendEmail({
+      name,
+      email,
+      message: suggestion,
+      type: "Suggestion",
     });
 
-    await transporter.sendMail({
-      from: `"Ossean" <${process.env.EMAIL}>`,
-      to: process.env.EMAIL,
-      replyTo: email,
-      subject: "New Suggestion Received",
-      html: `
-        <h2>New Suggestion</h2>
-        <p><b>Name:</b> ${name}</p>
-        <p><b>Email:</b> ${email}</p>
-        <p><b>Message:</b> ${suggestion}</p>
-      `,
-    });
+    res.json({ success: true, message: "Suggestion sent" });
 
-    return res.json({
-      success: true,
-      message: "Suggestion sent successfully",
-    });
-
-  } catch (error) {
-    console.error("SUGGESTION MAIL ERROR:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Error sending your suggestion",
-    });
+  } catch {
+    res.json({ success: false, message: "Email failed" });
   }
 };
 
-// ================= REPORT BUG =================
- const reportBug = async (req, res) => {
+const reportBug = async (req, res) => {
   try {
-    const { name, email, report, screenshot } = req.body;
+    const { name, email, report } = req.body;
 
-    if (!report) {
-      return res.status(400).json({
-        success: false,
-        message: "Please write something about the bug",
-      });
-    }
+    if (!report)
+      return res.json({ success: false, message: "Bug details required" });
 
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL,
-        pass: process.env.EMAIL_PASSWORD,
-      },
-      tls: {
-        rejectUnauthorized: false,
-      },
+    await sendEmail({
+      name,
+      email,
+      message: report,
+      type: "Bug Report",
     });
 
-    await transporter.sendMail({
-      from: `"Ossean" <${process.env.EMAIL}>`,
-      to: process.env.EMAIL,
-      replyTo: email,
-      subject: "New Bug Report",
-      html: `
-        <h2>New Bug Report</h2>
-        <p><b>Name:</b> ${name}</p>
-        <p><b>Email:</b> ${email}</p>
-        <p><b>Message:</b> ${report}</p>
-      `,
-      attachments: screenshot
-        ? [
-            {
-              filename: "screenshot.png",
-              content: screenshot.split("base64,")[1],
-              encoding: "base64",
-            },
-          ]
-        : [],
-    });
+    res.json({ success: true, message: "Bug reported" });
 
-    return res.json({
-      success: true,
-      message: "Bug report sent successfully",
-    });
-
-  } catch (error) {
-    console.error("BUG REPORT MAIL ERROR:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Error sending your report",
-    });
+  } catch {
+    res.json({ success: false, message: "Bug report failed" });
   }
 };
 
-export { registerUser, loginUser, sendSuggestion, reportBug,googleLogin };
+export {
+  registerUser,
+  loginUser,
+  googleLogin,
+  sendSuggestion,
+  reportBug,
+};
