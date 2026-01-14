@@ -1,0 +1,184 @@
+import React, { useContext, useEffect, useState } from 'react'
+import { Appcontext } from '../context/AppContext'
+
+const Trending = () => {
+  const [repoList, setRepoList] = useState([])
+  const {token} = useContext(Appcontext)
+  useEffect(() => {
+    const fetchTrending = async () => {
+      const today = new Date()
+      const past = new Date(today.setDate(today.getDate() - 30))
+        .toISOString()
+        .split('T')[0]
+
+      const res = await fetch(
+        `https://api.github.com/search/repositories?q=created:>=${past}&sort=stars&order=desc&per_page=30`
+        
+      )
+
+      const data = await res.json()
+
+      const formatted = data.items.map(repo => {
+        const score = repo.stargazers_count * 2 + repo.forks_count * 3
+
+        let popularity = 'Default'
+        if (score > 5000) popularity = 'Legendary'
+        else if (score > 2000) popularity = 'Famous'
+        else if (score > 800) popularity = 'Popular'
+
+        return {
+          id: repo.id,
+          name: repo.name,
+          html_url: repo.html_url,
+          owner: repo.owner,
+          language: repo.language,
+          stars: repo.stargazers_count,
+          fork: repo.forks_count,
+          popularity,
+          topics: repo.topics || [],
+          score
+        }
+      })
+
+      formatted.sort((a, b) => b.score - a.score)
+      setRepoList(formatted)
+    }
+
+    fetchTrending()
+  }, [token])
+
+  return (
+    <div className="text-white px-3 sm:px-6 py-6">
+
+      <h1 className="text-xl sm:text-2xl font-bold mb-6">
+        Top 30 Trending Repositories
+      </h1>
+
+      <div className="hidden lg:flex items-center bg-black/80 w-full py-3 px-4 text-sm font-medium">
+        <div className="w-1/4">Repository</div>
+        <div className="w-1/6">Language</div>
+        <div className="w-1/4">Topics</div>
+        <div className="w-1/10 text-right">Stars</div>
+        <div className="w-1/10 text-right">Forks</div>
+        <div className="w-1/10 text-right">Popularity</div>
+      </div>
+
+      <div className="divide-y divide-white/10 mt-4">
+
+        {repoList.map((item, index) => (
+          <div key={index}>
+
+            <div className="hidden lg:flex items-center bg-black/70 py-2 px-3 border border-white/10">
+
+              <div className="w-1/4 flex items-center gap-3">
+                <img
+                  src={item.owner.avatar_url}
+                  className="w-8 h-8 rounded-full border border-white/10"
+                />
+                <a
+                  href={item.html_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm font-semibold hover:underline"
+                >
+                  {item.name}
+                </a>
+              </div>
+
+              <div className="w-1/6 text-sm">{item.language || 'N/A'}</div>
+
+              <div className="w-1/4 flex flex-wrap gap-2">
+                {item.topics.slice(0, 3).map((t, i) => (
+                  <span
+                    key={i}
+                    className="text-xs px-2 py-1 rounded-md bg-white/10 border border-white/20"
+                  >
+                    {t}
+                  </span>
+                ))}
+              </div>
+
+              <div className="w-1/10 text-right text-sm">{item.stars}</div>
+              <div className="w-1/10 text-right text-sm">{item.fork}</div>
+
+              <div className="w-1/10 text-right">
+                <PopularityBadge value={item.popularity} />
+              </div>
+            </div>
+
+            <div className="lg:hidden bg-black/70 border border-white/10 rounded-lg p-4 space-y-3">
+
+              <div className="flex items-center gap-3">
+                <img
+                  src={item.owner.avatar_url}
+                  className="w-8 h-8 rounded-full border border-white/10"
+                />
+                <a
+                  href={item.html_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold hover:underline"
+                >
+                  {item.name}
+                </a>
+              </div>
+
+              <div className="flex flex-wrap gap-2 text-sm">
+                <span className="bg-white/10 px-2 py-1 rounded">
+                  {item.language || 'N/A'}
+                </span>
+                <span className="bg-white/10 px-2 py-1 rounded">
+                  ⭐ {item.stars}
+                </span>
+                <span className="bg-white/10 px-2 py-1 rounded">
+                  🍴 {item.fork}
+                </span>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                {item.topics.slice(0, 3).map((t, i) => (
+                  <span
+                    key={i}
+                    className="text-xs px-2 py-1 rounded-md bg-white/10 border border-white/20"
+                  >
+                    {t}
+                  </span>
+                ))}
+              </div>
+
+              <PopularityBadge value={item.popularity} />
+            </div>
+
+          </div>
+        ))}
+
+        {repoList.length === 0 && (
+          <div className="text-center text-neutral-400 py-8">
+            No repositories to show.
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+export default Trending
+
+const PopularityBadge = ({ value }) => {
+  const styles = {
+    Legendary: "border-yellow-600 text-yellow-400 bg-yellow-600/10",
+    Famous: "border-purple-600 text-purple-400 bg-purple-600/10",
+    Popular: "border-green-600 text-green-400 bg-green-600/10",
+    Default: "border-gray-600 text-gray-300 bg-gray-600/10"
+  }
+
+  return (
+    <span
+      className={`inline-block px-3 py-1 text-xs rounded-md border ${
+        styles[value] || styles.Default
+      }`}
+    >
+      {value}
+    </span>
+  )
+}
