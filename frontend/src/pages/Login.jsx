@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { Appcontext } from '../context/AppContext'
 import { toast } from 'react-toastify'
 import axios from 'axios'
+import { GoogleLogin } from "@react-oauth/google";
 
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true)
@@ -54,6 +55,26 @@ const Login = () => {
       toast.error("Something went wrong")
     }
   }
+  // ================= GOOGLE LOGIN =================
+const handleGoogleLogin = async (credential) => {
+  try {
+    const { data } = await axios.post(
+      backendUrl + "/api/user/google",
+      { credential }
+    );
+ 
+    if (data.success) {
+      localStorage.setItem("token", data.token);
+      setToken(data.token);
+      navigate("/home");
+    } else {
+      toast.error(data.message);
+    }
+  } catch (err) {
+    toast.error("Google login failed");
+  }
+};
+
   return (
     <form onSubmit={onSubmitHandler}>
       <div className="relative bg-black min-h-screen overflow-hidden flex justify-center items-center">
@@ -68,13 +89,14 @@ const Login = () => {
             WELCOME
           </p>
 
-          {/* GOOGLE LOGIN (UI UNCHANGED)
-          <div
-            className="bg-white px-8 py-1 flex gap-2 text-sm cursor-pointer font-semibold hover:bg-white/90 hover:text-black transition"
-          >
-            <img src={googleIcon} alt="" className="w-5" />
-            <p>Continue with Google</p>
-          </div> */}
+          {/* GOOGLE LOGIN */}
+          <div className="mb-2 px-10  ">
+            <GoogleLogin
+              onSuccess={(res) => handleGoogleLogin(res.credential)}
+              onError={() => toast.error("Google login failed")}
+            />
+          </div>
+
 
           <div className="bg-white/11000 text-white backdrop-blur-md rounded-sm shadow-lg w-[380px] px-6 py-8">
             <h2 className="text-2xl font-semibold text-center mb-6">
