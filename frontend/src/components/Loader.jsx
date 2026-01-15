@@ -1,7 +1,7 @@
 const Loader = () => {
   return (
-    <div className="h-screen flex items-center justify-center">
-      <div className="w-12 h-12 border-4 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+    <div className="flex justify-center items-center py-10">
+      <div className="w-4 h-4 rounded-full bg-yellow-400 animate-ping" />
     </div>
   )
 }

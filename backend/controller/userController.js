@@ -3,6 +3,72 @@ import validator from "validator";
 import userModel from "../model/userModel.js";
 import jwt from "jsonwebtoken";
 import { OAuth2Client } from "google-auth-library";
+import { upload } from "../middleware/multer.js"
+import { Resend } from "resend"
+
+const resend = new Resend(process.env.RESEND_API_KEY)
+
+export const sendEmail = async ({ subject, html, attachment }) => {
+  await resend.emails.send({
+    from: "Ossean <onboarding@resend.dev>",
+    to: ["rohitsharmasa120111@gmail.com"],
+    subject,
+    html,
+    attachments: attachment
+      ? [
+          {
+            filename: attachment.originalname,
+            content: attachment.buffer
+          }
+        ]
+      : []
+  })
+}
+
+export const sendSuggestion = async (req,res)=>{
+   const { name, email, message } = req.body
+
+  if (!message)
+    return res.json({ success: false, message: "Message required" })
+
+  await sendEmail({
+    subject: "New Suggestion",
+    html: `
+      <p><b>Name:</b> ${name}</p>
+      <p><b>Email:</b> ${email}</p>
+      <p><b>Suggestion:</b> ${message}</p>
+    `
+  })
+
+  res.json({ success: true, message: "Suggestion sent" })
+}
+
+//------BUG REPORT-------
+
+
+export const bugReport = async (req,res)=>{
+ const { name, email, report } = req.body
+
+  if (!report)
+    return res.json({ success: false, message: "Bug report required" })
+
+  if (req.file && !req.file.mimetype.startsWith("image/")) {
+    return res.json({ success: false, message: "Only images allowed" })
+  }
+
+  await sendEmail({
+    subject: "New Bug Report",
+    html: `
+      <p><b>Name:</b> ${name}</p>
+      <p><b>Email:</b> ${email}</p>
+      <p><b>Bug:</b> ${report}</p>
+    `,
+    attachment: req.file || null
+  })
+
+  res.json({ success: true, message: "Bug reported successfully" })
+
+}
 
 export const registerUser = async (req, res) => {
   try {

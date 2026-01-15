@@ -1,25 +1,72 @@
 import React, { useContext, useState } from 'react'
 import { Appcontext } from '../context/AppContext'
+import{ toast } from 'react-toastify'
 
 const Bug = () => {
+  const { backendUrl } = useContext(Appcontext)
+
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [report, setReport] = useState("")
   const [screenshot, setScreenshot] = useState(null)
+  const [loading, setLoading] = useState(false)
+
   const convertToBase64 = (e) => {
     const file = e.target.files[0]
     if (!file) return
-    const reader = new FileReader()
-    reader.readAsDataURL(file)
-    reader.onload = () => setScreenshot(reader.result)
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Only image files are allowed")
+      return
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be under 5MB")
+      return
+    }
+
+    setScreenshot(file)
   }
 
-  const onSubmitHandler = (e) => {
+  const onSubmitHandler = async (e) => {
     e.preventDefault()
-    setEmail("")
-    setName("")
-    setReport("")
-    setScreenshot(null)
+
+    if (!report.trim()) {
+      toast.error("Bug description is required")
+      return
+    }
+
+    try {
+      setLoading(true)
+
+      const formData = new FormData()
+      formData.append("name", name)
+      formData.append("email", email)
+      formData.append("report", report)
+      if (screenshot) formData.append("screenshot", screenshot)
+
+      const res = await fetch(`${backendUrl}/api/user/bug`, {
+        method: "POST",
+        body: formData
+      })
+
+      const data = await res.json()
+
+      if (data.success) {
+        toast.success("Bug reported successfully")
+        setEmail("")
+        setName("")
+        setReport("")
+        setScreenshot(null)
+      } else {
+        toast.error(data.message || "Something went wrong")
+      }
+
+    } catch (error) {
+      toast.error("Failed to submit bug report")
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -82,13 +129,14 @@ const Bug = () => {
 
           <button
             type="submit"
+            disabled={loading}
             className="
               mt-2 bg-gray-800 text-white py-3 rounded-lg
               hover:bg-white/90 hover:text-black
               transition font-medium
             "
           >
-            Send Report
+            {loading ? "Sending..." : "Send Report"}
           </button>
         </form>
       </div>

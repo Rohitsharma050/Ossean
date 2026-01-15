@@ -1,17 +1,48 @@
 import React, { useContext, useState } from 'react'
 import { Appcontext } from '../context/AppContext'
-
+import {toast} from 'react-toastify'
 const Feature = () => {
+  const { backendUrl } = useContext(Appcontext)
+
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [suggestion, setSuggestion] = useState('')
+  const [loading, setLoading] = useState(false)
 
-
-  const onSubmitHandler = (e) => {
+  const onSubmitHandler = async (e) => {
     e.preventDefault()
-    setSuggestion("")
-    setEmail("")
-    setName("")
+
+    try {
+      setLoading(true)
+
+      const res = await fetch(`${backendUrl}/api/user/suggestion`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          message: suggestion
+        })
+      })
+
+      const data = await res.json()
+
+      if (data.success) {
+        setSuggestion("")
+        setEmail("")
+        setName("")
+        toast.success("Suggestion sent successfully")
+      } else {
+        toast.error(data.message || "Something went wrong")
+      }
+
+    } catch (error) {
+      toast.error("Failed to send suggestion")
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -62,13 +93,14 @@ const Feature = () => {
 
           <button
             type="submit"
+            disabled={loading}
             className="
               mt-2 bg-gray-800 text-white py-3 rounded-lg
               hover:bg-white/90 hover:text-black
               transition font-medium
             "
           >
-            Send Suggestion
+            {loading ? "Sending..." : "Send Suggestion"}
           </button>
         </form>
       </div>

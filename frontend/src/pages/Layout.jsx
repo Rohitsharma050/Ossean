@@ -15,10 +15,11 @@ export default function Layout() {
     <div className="relative min-h-screen bg-black">
       
       {/* Background Image */}
-      <div
-        className="absolute inset-0 bg-center bg-cover opacity-60"
-        style={{ backgroundImage: `url(${bgImage})` }}
-      />
+     <div
+  className="fixed inset-0 bg-center bg-cover opacity-60"
+  style={{ backgroundImage: `url(${bgImage})` }}
+/>
+
 
       {/* Content Wrapper */}
       <div className="relative z-10">
