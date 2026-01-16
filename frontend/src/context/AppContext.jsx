@@ -28,42 +28,29 @@ const AppContextProvider = (props) => {
     navigate("/");
   };
 
-  const getRandomRepo = async ()=>{
+  const getRandomRepo = async () => {
+  try {
+    setLoading(true);
 
-    setLoading(true)
-    const url = `https://api.github.com/search/repositories?q=stars:1000..10000&sort=stars&order=desc
-`;
+    const response = await fetch(
+      `${backendUrl}/api/github/randomRepo`
+    );
 
-      const response = await fetch(url);
-      const data = await response.json();
+    const result = await response.json();
 
-      if (!data.items) {
-        setRandomRepo([]);
-        setLoading(false)
-        return;
-      }
+    if (!result.success) {
+      setRandomRepo([]);
+      return;
+    }
 
-  const finalData = data.items.slice(0, 30).map((repo) => ({
-  name: repo.name,
-  language: repo.language,
-  tag: repo.topics,
-  stars: repo.stargazers_count,
-  fork: repo.forks_count,
-  owner: { avatar_url: repo.owner.avatar_url },
-  html_url: repo.html_url,
-  popularity:
-    repo.stargazers_count > 50000
-      ? "Legendary"
-      : repo.stargazers_count > 10000
-      ? "Famous"
-      : repo.stargazers_count > 1000
-      ? "Popular"
-      : "Rising",
-}));
+    setRandomRepo(result.data);
 
-    setLoading(false)
-    setRandomRepo(finalData)
+  } catch (err) {
+    setRandomRepo([]);
+  } finally {
+    setLoading(false);
   }
+};
 
   const getPopularityQuery = () => {
     if (popularity === "Legendary") return "stars:>50000+forks:>10000";
@@ -74,109 +61,60 @@ const AppContextProvider = (props) => {
   };
 
   const getRepoList = async () => {
-
-    setLoading(true)
-    try {
-      let q = getPopularityQuery();
-
-      if (language !== "All Languages") {
-        q = `language:${language}+${q}`;
-      }
-
-      const url = `https://api.github.com/search/repositories?q=${q}&sort=stars&order=desc`;
-
-      const response = await fetch(url);
-      const data = await response.json();
-
-      if (!data.items) {
-        setLoading(false)
-        setRepoList([]);
-        return;
-      }
-
-  const finalData = data.items.slice(0, 30).map((repo) => ({
-  name: repo.name,
-  language: repo.language,
-  tag: repo.topics,
-  stars: repo.stargazers_count,
-  fork: repo.forks_count,
-  owner: { avatar_url: repo.owner.avatar_url },
-  html_url: repo.html_url,
-  popularity:
-    repo.stargazers_count > 50000
-      ? "Legendary"
-      : repo.stargazers_count > 10000
-      ? "Famous"
-      : repo.stargazers_count > 1000
-      ? "Popular"
-      : "Rising",
-}));
-
-
-      setRepoList(finalData);
-      setLoading(false);
-    } catch (error) {
-      console.log("API ERROR:", error);
-      setRepoList([]);
-    }
-  };
-
-const getSearchList = async () => {
-
-  setLoading(true)
-  if (!repoName.trim()) {
-    setLoading(false)
-    setSearchList(randomRepo)
-    return
-  }
-
   try {
-    const url = `https://api.github.com/search/repositories?q=${repoName}+in:name`
-    const response = await fetch(url)
-    const data = await response.json()
+    setLoading(true);
 
-    if (!data.items) {
-      setSearchList(randomRepo)
-      setLoading(true)
-      return
+    const response = await fetch(
+      `${backendUrl}/api/github/filterRepo?language=${language}&popularity=${popularity}`
+    );
+
+    const result = await response.json();
+
+    if (!result.success) {
+      setRepoList([]);
+      return;
     }
 
-    const exactMatch = data.items.filter(
-      repo => repo.name.toLowerCase() === repoName.toLowerCase()
-    )
-
-    if (exactMatch.length === 0) {
-      setLoading(false)
-      setSearchList(randomRepo)
-      return
-    }
-
-    const finalData = exactMatch.slice(0, 30).map((repo) => ({
-      name: repo.name,
-      language: repo.language,
-      tag: repo.topics,
-      stars: repo.stargazers_count,
-      fork: repo.forks_count,
-      owner: { avatar_url: repo.owner.avatar_url },
-      html_url: repo.html_url,
-      popularity:
-        repo.stargazers_count > 50000
-          ? "Legendary"
-          : repo.stargazers_count > 10000
-          ? "Famous"
-          : repo.stargazers_count > 1000
-          ? "Popular"
-          : "Rising",
-    }))
-
-    setSearchList(finalData)
-    setLoading(false)
+    setRepoList(result.data);
 
   } catch (error) {
-    console.log("Search API error:", error)
-    setSearchList(randomRepo)
+    setRepoList([]);
+  } finally {
+    setLoading(false);
   }
-}
+};
+
+
+const getSearchList = async () => {
+  try {
+    setLoading(true);
+
+    if (!repoName.trim()) {
+      setSearchList(randomRepo);
+      return;
+    }
+
+    const response = await fetch(
+      `${backendUrl}/api/github/searchRepo?q=${repoName}`
+    );
+
+    const result = await response.json();
+
+    if (!result.success || result.data.length === 0) {
+      setSearchList(randomRepo);
+      return;
+    }
+
+    setSearchList(result.data);
+
+  } catch (error) {
+    console.log("Search API error:", error);
+    setSearchList(randomRepo);
+  } finally {
+    setLoading(false);
+  }
+};
+
   useEffect(() => {
   if (token) {
     getRandomRepo()
