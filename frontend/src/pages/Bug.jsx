@@ -133,7 +133,7 @@ const Bug = () => {
             className="
               mt-2 bg-gray-800 text-white py-3 rounded-lg
               hover:bg-white/90 hover:text-black
-              transition font-medium
+              transition font-medium cursor-pointer
             "
           >
             {loading ? "Sending..." : "Send Report"}

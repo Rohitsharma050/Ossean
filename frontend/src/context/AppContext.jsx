@@ -29,6 +29,8 @@ const AppContextProvider = (props) => {
   };
 
   const getRandomRepo = async ()=>{
+
+    setLoading(true)
     const url = `https://api.github.com/search/repositories?q=stars:1000..10000&sort=stars&order=desc
 `;
 
@@ -37,6 +39,7 @@ const AppContextProvider = (props) => {
 
       if (!data.items) {
         setRandomRepo([]);
+        setLoading(false)
         return;
       }
 
@@ -58,7 +61,8 @@ const AppContextProvider = (props) => {
       : "Rising",
 }));
 
-setRandomRepo(finalData)
+    setLoading(false)
+    setRandomRepo(finalData)
   }
 
   const getPopularityQuery = () => {
@@ -70,6 +74,8 @@ setRandomRepo(finalData)
   };
 
   const getRepoList = async () => {
+
+    setLoading(true)
     try {
       let q = getPopularityQuery();
 
@@ -83,6 +89,7 @@ setRandomRepo(finalData)
       const data = await response.json();
 
       if (!data.items) {
+        setLoading(false)
         setRepoList([]);
         return;
       }
@@ -115,7 +122,10 @@ setRandomRepo(finalData)
   };
 
 const getSearchList = async () => {
+
+  setLoading(true)
   if (!repoName.trim()) {
+    setLoading(false)
     setSearchList(randomRepo)
     return
   }
@@ -127,6 +137,7 @@ const getSearchList = async () => {
 
     if (!data.items) {
       setSearchList(randomRepo)
+      setLoading(true)
       return
     }
 
@@ -135,6 +146,7 @@ const getSearchList = async () => {
     )
 
     if (exactMatch.length === 0) {
+      setLoading(false)
       setSearchList(randomRepo)
       return
     }
@@ -158,6 +170,7 @@ const getSearchList = async () => {
     }))
 
     setSearchList(finalData)
+    setLoading(false)
 
   } catch (error) {
     console.log("Search API error:", error)
@@ -167,7 +180,6 @@ const getSearchList = async () => {
   useEffect(() => {
   if (token) {
     getRandomRepo()
-    console.log(randomRepo)
   }
 }, [token])
 

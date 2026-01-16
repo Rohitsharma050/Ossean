@@ -1,11 +1,13 @@
 import React, { useContext, useState, useEffect } from 'react'
 import { Appcontext } from '../context/AppContext'
 import { Search } from 'lucide-react'
+import Loader from '../components/Loader'
 
 const Discover = () => {
-  const { repoName, setRepoName, searchList, randomRepo } = useContext(Appcontext)
-  const [repoList, setRepoList] = useState([])
+  const { repoName, setRepoName, searchList, randomRepo, loading } =
+    useContext(Appcontext)
 
+  const [repoList, setRepoList] = useState([])
 
   useEffect(() => {
     if (repoName.trim().length === 0) {
@@ -47,106 +49,112 @@ const Discover = () => {
         <div className="w-1/10 text-right">Popularity</div>
       </div>
 
-      <div className="divide-y divide-white/10 mt-4">
+      {/* 🔄 LOADER */}
+      {loading && <Loader />}
 
-        {repoList.map((item, index) => (
-          <div key={index}>
+      {/* 📦 DATA */}
+      {!loading && (
+        <div className="divide-y divide-white/10 mt-4">
 
-            {/* ================= DESKTOP ROW ================= */}
-            <div className="hidden lg:flex items-center bg-black/70 py-2 px-3 border border-white/10">
+          {repoList.map((item, index) => (
+            <div key={item.id || index}>
 
-              <div className="w-1/4 flex items-center gap-3">
-                <img
-                  src={item.owner.avatar_url}
-                  alt="avatar"
-                  className="w-8 h-8 rounded-full border border-white/10"
-                />
-                <a
-                  href={item.html_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm font-semibold hover:underline"
-                >
-                  {item.name}
-                </a>
-              </div>
+              {/* ================= DESKTOP ROW ================= */}
+              <div className="hidden lg:flex items-center bg-black/70 py-2 px-3 border border-white/10">
 
-              <div className="w-1/6 text-sm">{item.language || "N/A"}</div>
-
-              <div className="w-1/4 flex flex-wrap gap-2">
-                {item.tag?.slice(0, 3).map((t, i) => (
-                  <span
-                    key={i}
-                    className="text-xs px-2 py-1 rounded-md bg-white/10 border border-white/20"
+                <div className="w-1/4 flex items-center gap-3">
+                  <img
+                    src={item.owner.avatar_url}
+                    alt="avatar"
+                    className="w-8 h-8 rounded-full border border-white/10"
+                  />
+                  <a
+                    href={item.html_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm font-semibold hover:underline"
                   >
-                    {t}
-                  </span>
-                ))}
+                    {item.name}
+                  </a>
+                </div>
+
+                <div className="w-1/6 text-sm">{item.language || "N/A"}</div>
+
+                <div className="w-1/4 flex flex-wrap gap-2">
+                  {item.tag?.slice(0, 3).map((t, i) => (
+                    <span
+                      key={i}
+                      className="text-xs px-2 py-1 rounded-md bg-white/10 border border-white/20"
+                    >
+                      {t}
+                    </span>
+                  ))}
+                </div>
+
+                <div className="w-1/10 text-right text-sm">{item.stars}</div>
+                <div className="w-1/10 text-right text-sm">{item.fork}</div>
+
+                <div className="w-1/10 text-right">
+                  <PopularityBadge value={item.popularity} />
+                </div>
               </div>
 
-              <div className="w-1/10 text-right text-sm">{item.stars}</div>
-              <div className="w-1/10 text-right text-sm">{item.fork}</div>
+              {/* ================= MOBILE CARD ================= */}
+              <div className="lg:hidden bg-black/70 border border-white/10 rounded-lg p-4 space-y-3">
 
-              <div className="w-1/10 text-right">
+                <div className="flex items-center gap-3">
+                  <img
+                    src={item.owner.avatar_url}
+                    alt="avatar"
+                    className="w-8 h-8 rounded-full border border-white/10"
+                  />
+                  <a
+                    href={item.html_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold hover:underline"
+                  >
+                    {item.name}
+                  </a>
+                </div>
+
+                <div className="flex flex-wrap gap-2 text-sm">
+                  <span className="bg-white/10 px-2 py-1 rounded">
+                    {item.language || "N/A"}
+                  </span>
+                  <span className="bg-white/10 px-2 py-1 rounded">
+                    ⭐ {item.stars}
+                  </span>
+                  <span className="bg-white/10 px-2 py-1 rounded">
+                    🍴 {item.fork}
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {item.tag?.slice(0, 3).map((t, i) => (
+                    <span
+                      key={i}
+                      className="text-xs px-2 py-1 rounded-md bg-white/10 border border-white/20"
+                    >
+                      {t}
+                    </span>
+                  ))}
+                </div>
+
                 <PopularityBadge value={item.popularity} />
               </div>
+
             </div>
+          ))}
 
-            {/* ================= MOBILE CARD ================= */}
-            <div className="lg:hidden bg-black/70 border border-white/10 rounded-lg p-4 space-y-3">
-
-              <div className="flex items-center gap-3">
-                <img
-                  src={item.owner.avatar_url}
-                  alt="avatar"
-                  className="w-8 h-8 rounded-full border border-white/10"
-                />
-                <a
-                  href={item.html_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-semibold hover:underline"
-                >
-                  {item.name}
-                </a>
-              </div>
-
-              <div className="flex flex-wrap gap-2 text-sm">
-                <span className="bg-white/10 px-2 py-1 rounded">
-                  {item.language || "N/A"}
-                </span>
-                <span className="bg-white/10 px-2 py-1 rounded">
-                  ⭐ {item.stars}
-                </span>
-                <span className="bg-white/10 px-2 py-1 rounded">
-                  🍴 {item.fork}
-                </span>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                {item.tag?.slice(0, 3).map((t, i) => (
-                  <span
-                    key={i}
-                    className="text-xs px-2 py-1 rounded-md bg-white/10 border border-white/20"
-                  >
-                    {t}
-                  </span>
-                ))}
-              </div>
-
-              <PopularityBadge value={item.popularity} />
+          {/* EMPTY STATE */}
+          {repoList.length === 0 && (
+            <div className="text-center text-neutral-400 py-8">
+              No repositories to show.
             </div>
-
-          </div>
-        ))}
-
-        {/* EMPTY STATE (LOGIC SAME) */}
-        {repoList.length === 0 && (
-          <div className="text-center text-neutral-400 py-8">
-            No repositories to show.
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

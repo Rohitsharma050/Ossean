@@ -1,6 +1,8 @@
 import { Menu } from "lucide-react"
+import { Navigate, useNavigate } from "react-router-dom"
 
 const Navbar = ({ toggleSidebar }) => {
+  const navigate = useNavigate()
   return (
     <div
       className="fixed top-0 left-0 w-full flex items-center
@@ -18,9 +20,11 @@ const Navbar = ({ toggleSidebar }) => {
       </button>
 
       {/* Logo */}
-      <h1 className="text-white tracking-tight text-3xl font-serif">
-        Oss<span className="text-neutral-300 tracking-tight text-3xl">ean</span>
+      
+      <h1 className="text-white tracking-tight text-3xl font-serif cursor-pointer">
+        Oss<span className="text-neutral-300 tracking-tight text-3xl cursor-pointer">ean</span>
       </h1>
+    
     </div>
   )
 }

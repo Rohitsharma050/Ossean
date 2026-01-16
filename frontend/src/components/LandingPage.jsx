@@ -14,12 +14,12 @@ const LandingPage = () => {
 
         /* Navbar */
         <div className='flex justify-between items-center flex-wrap gap-4'>
-          <h1 className='text-white tracking-tight text-3xl font-serif'>
-            Oss<span className='text-neutral-500 tracking-tight text-3xl'>ean</span>
+          <h1 className='text-white tracking-tight text-3xl font-serif cursor-pointer'>
+            Oss<span className='text-neutral-500 tracking-tight text-3xl cursor-pointer'>ean</span>
           </h1>
 
           <div onClick={() => navigate(token ? '/home' : '/login')}  className='bg-white md:flex hidden items-center hover:scale-105 transition-all duration-300 shadow-md'>
-            <button className='px-5 py-1.5 text-black font-medium'>Get Started</button>
+            <button className='px-5 py-1.5 text-black font-medium cursor-pointer'>Get Started</button>
             <img src={arrow_icon} className='w-5 h-5 mr-3' alt="arrow" />
           </div>
         </div>
@@ -46,8 +46,8 @@ const LandingPage = () => {
             </div>
 
             {/* Button */}
-            <div className='bg-white flex items-center w-fit mx-auto lg:mx-0 hover:scale-105 transition-all duration-300 shadow-md'>
-              <button onClick={() => navigate(token ? '/home' : '/login')}  className='px-5 py-1.5 text-black font-medium'>Get Started</button>
+            <div className='bg-white flex items-center w-fit mx-auto lg:mx-0 hover:scale-105 transition-all duration-300 shadow-md r'>
+              <button onClick={() => navigate(token ? '/home' : '/login')}  className='px-5 py-1.5 text-black font-medium cursor-pointer'>Dive into Ossean</button>
               <img src={arrow_icon} className='w-5 h-5 mr-3' alt="arrow" />
             </div>
           </div>

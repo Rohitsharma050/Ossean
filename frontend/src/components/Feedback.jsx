@@ -48,7 +48,7 @@ const Feedback = () => {
 
       <p className='text-neutral-400 py-8  '>Join hundereds of developers already using Ossean</p>
        <div className='bg-white flex items-center hover:scale-105 transition-all duration-300 shadow-md'>
-                  <button onClick={() => navigate(token ? '/home' : '/login')}  className='px-5 py-1.5 text-black font-medium'>Get Started Today</button>
+                  <button onClick={() => navigate(token ? '/home' : '/login')}  className='px-5 py-1.5 text-black font-medium cursor-pointer'>Get Started Today</button>
                   <img src={arrow_icon} className='w-5 h-5 mr-3' alt="arrow" />
         </div>
     </div>
