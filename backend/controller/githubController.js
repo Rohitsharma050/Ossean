@@ -1,6 +1,3 @@
-import express from 'express'
-
-
 export const getRandomRepo = async (req,res)=>{
      try {
     const url = `https://api.github.com/search/repositories?q=stars:1000..10000&sort=stars&order=desc&per_page=30`;
@@ -57,7 +54,7 @@ export const getFilterRepo = async (req,res)=>{
     else if (popularity === "Popular")
       q = "stars:1000..10000";
     else
-      q = "stars:>1000";
+      q = "stars:<1000";
 
     if (language && language !== "All Languages") {
       q = `language:${language}+${q}`;
@@ -78,8 +75,6 @@ export const getFilterRepo = async (req,res)=>{
     if (!data.items) {
       return res.json({ success: true, data: [] });
     }
-
-    // 🔥 SAME LOGIC (shifted from frontend)
     const finalData = data.items.map((repo) => ({
       name: repo.name,
       language: repo.language,
@@ -129,7 +124,6 @@ export const getSearchRepo = async (req,res)=>{
       return res.json({ success: true, data: [] });
     }
 
-    // 🔥 SAME EXACT MATCH LOGIC
     const exactMatch = data.items.filter(
       repo => repo.name.toLowerCase() === q.toLowerCase()
     );
@@ -138,7 +132,7 @@ export const getSearchRepo = async (req,res)=>{
       return res.json({ success: true, data: [] });
     }
 
-    // 🔥 SAME MAPPING LOGIC
+  
     const finalData = exactMatch.map((repo) => ({
       name: repo.name,
       language: repo.language,
