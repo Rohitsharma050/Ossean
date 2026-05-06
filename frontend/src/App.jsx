@@ -8,6 +8,7 @@ import Trending from "./pages/Trending";
 import Discover from "./pages/Discover";
 import Feature from "./pages/Feature";
 import Bug from "./pages/Bug";
+import GsocOrg from "./pages/GsocOrg";
 export default function App() {
   return (
     <div>
@@ -20,8 +21,10 @@ export default function App() {
         <Route path="/home" element={<Home />} />
         <Route path="/trending" element={<Trending />} />
         <Route path="/discover" element={<Discover/>} />
+        <Route path="/GsocOrg" element={<GsocOrg/>}/>
         <Route path="/feature" element={<Feature/>} />
         <Route path="/bug" element={<Bug/>} />
+
       </Route>
     </Routes>
     </div>

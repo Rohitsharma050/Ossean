@@ -53,6 +53,7 @@ export default function Sidebar({ isOpen, closeSidebar }) {
           <NavItem to="/home" icon={<Home size={16} />} text="Home" onClick={closeSidebar} />
           <NavItem to="/trending" icon={<Flame size={16} />} text="Trending" onClick={closeSidebar} />
           <NavItem to="/discover" icon={<Compass size={16} />} text="Discover" onClick={closeSidebar} />
+          <NavItem to="/GsocOrg" icon={<Compass size={16} />} text="GSOC ORG" onClick={closeSidebar} />
         </div>
 
         {/* FEEDBACK */}
