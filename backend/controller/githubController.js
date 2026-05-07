@@ -157,3 +157,49 @@ export const getSearchRepo = async (req,res)=>{
     res.status(500).json({ success: false, message: "Search failed" });
   }
 }
+
+export const getOrgList = async (req, res) => {
+
+  try {
+
+    const { year } = req.query
+
+    const url = `https://api.gsocorganizations.dev/${year}.json`
+
+    const response = await fetch(url)
+
+    const data = await response.json()
+
+    const finalData = data.organizations.map((org) => ({
+      name: org.name,
+      img_url: org.image_url,
+      bg_color: org.image_background_color,
+      desc: org.description,
+      url: org.url,
+      category: org.category,
+      projects_url: org.projects_url,
+      ideas_url: org.ideas_url,
+      guide_url: org.guide_url,
+      topics: org.topics,
+      technologies: org.technologies,
+      contact_email: org.contact_email,
+      mailing_list: org.mailing_list,
+      twitter_url: org.twitter_url,
+      num_projects: org.num_projects
+    }))
+
+    res.json({
+      success: true,
+      data: finalData
+    })
+
+  } catch (error) {
+
+    console.log(error)
+
+    res.status(500).json({
+      success: false,
+      message: error.message
+    })
+  }
+}

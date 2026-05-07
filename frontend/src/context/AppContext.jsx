@@ -13,12 +13,14 @@ const AppContextProvider = (props) => {
     localStorage.getItem("token") ? localStorage.getItem("token") : false
   );
 
+  const [year,setYear] = useState(2026)
   const [repoList, setRepoList] = useState([]);
   const [language, setLanguage] = useState("All Languages");
   const [popularity, setPopularity] = useState("All Popularity");
   const [repoName,setRepoName] = useState("")
   const [searchList,setSearchList] = useState([])
   const [randomRepo,setRandomRepo] = useState([])
+  const [gsocOrgList, setGsocOrgList] = useState([])
 
 
 
@@ -115,6 +117,30 @@ const getSearchList = async () => {
   }
 };
 
+const getOrgList = async ()=>{
+  
+  try {
+    
+    setLoading(true)
+    const response = await fetch(
+      `${backendUrl}/api/github/getOrg?year=${year}`
+    );
+ 
+    const data = await response.json()
+    if(data.success)
+    {
+       setGsocOrgList(data.data)
+    }
+
+   setLoading(false)
+      
+  } catch (error) {
+    setGsocOrgList([])
+    setLoading(false)
+  }
+
+}
+
   useEffect(() => {
   if (token) {
     getRandomRepo()
@@ -137,6 +163,12 @@ useEffect(() => {
   return () => clearTimeout(timer)
 }, [repoName])
 
+useEffect(()=>{
+  if(token)
+  {
+    getOrgList()
+  }
+},[token,year])
 
   return (
     <Appcontext.Provider
@@ -154,7 +186,8 @@ useEffect(() => {
         getRepoList,
         searchList,setSearchList,
         repoName,setRepoName,
-        randomRepo,loading
+        randomRepo,loading,
+        gsocOrgList,setGsocOrgList,year,setYear
 
         
       }}
