@@ -13,15 +13,11 @@ const AppContextProvider = (props) => {
     localStorage.getItem("token") ? localStorage.getItem("token") : false
   );
 
-  const [year,setYear] = useState(2026)
+
   const [repoList, setRepoList] = useState([]);
   const [language, setLanguage] = useState("All Languages");
   const [popularity, setPopularity] = useState("All Popularity");
-  const [repoName,setRepoName] = useState("")
-  const [searchList,setSearchList] = useState([])
   const [randomRepo,setRandomRepo] = useState([])
-  const [gsocOrgList, setGsocOrgList] = useState([])
-
 
 
   const signOut = () => {
@@ -87,59 +83,9 @@ const AppContextProvider = (props) => {
 };
 
 
-const getSearchList = async () => {
-  try {
-    setLoading(true);
 
-    if (!repoName.trim()) {
-      setSearchList(randomRepo);
-      return;
-    }
 
-    const response = await fetch(
-      `${backendUrl}/api/github/searchRepo?q=${repoName}`
-    );
 
-    const result = await response.json();
-
-    if (!result.success || result.data.length === 0) {
-      setSearchList(randomRepo);
-      return;
-    }
-
-    setSearchList(result.data);
-
-  } catch (error) {
-    console.log("Search API error:", error);
-    setSearchList(randomRepo);
-  } finally {
-    setLoading(false);
-  }
-};
-
-const getOrgList = async ()=>{
-  
-  try {
-    
-    setLoading(true)
-    const response = await fetch(
-      `${backendUrl}/api/github/getOrg?year=${year}`
-    );
- 
-    const data = await response.json()
-    if(data.success)
-    {
-       setGsocOrgList(data.data)
-    }
-
-   setLoading(false)
-      
-  } catch (error) {
-    setGsocOrgList([])
-    setLoading(false)
-  }
-
-}
 
   useEffect(() => {
   if (token) {
@@ -153,22 +99,9 @@ const getOrgList = async ()=>{
     }
   },[language,popularity,token])
 
-useEffect(() => {
-  if (!token) return
 
-  const timer = setTimeout(() => {
-    getSearchList()
-  }, 600)
 
-  return () => clearTimeout(timer)
-}, [repoName])
 
-useEffect(()=>{
-  if(token)
-  {
-    getOrgList()
-  }
-},[token,year])
 
   return (
     <Appcontext.Provider
@@ -184,10 +117,7 @@ useEffect(()=>{
         popularity,
         setPopularity,
         getRepoList,
-        searchList,setSearchList,
-        repoName,setRepoName,
-        randomRepo,loading,
-        gsocOrgList,setGsocOrgList,year,setYear
+        randomRepo,loading,setLoading,
 
         
       }}

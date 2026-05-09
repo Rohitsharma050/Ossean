@@ -1,4 +1,4 @@
-import React, { useContext } from 'react'
+import React, { useContext,useState,useEffect } from 'react'
 import { Appcontext } from '../context/AppContext'
 import {
   Mail,
@@ -9,15 +9,60 @@ import {
   BookOpen
 } from 'lucide-react'
 import Loader from '../components/Loader'
+import SearchBar from '../components/SearchBar'
+
 
 function GsocOrg() {
-
+  const [orgKeyword,setOrgKeyword] = useState("")
+  const [gsocOrgList,setGsocOrgList] = useState([])
+  const [year,setYear] = useState(2026)
   const {
-    gsocOrgList,
-    year,
-    setYear,
-    loading
+    loading,token,setLoading,backendUrl
   } = useContext(Appcontext)
+
+
+  // Get orginaztion list year wise
+    const getOrgList = async ()=>{
+      
+      try {
+        
+        setLoading(true)
+        const response = await fetch(
+          `${backendUrl}/api/github/getOrg?year=${year}`
+        );
+     
+        const data = await response.json()
+        if(data.success)
+        {
+           setGsocOrgList(data.data)
+        }
+    
+       setLoading(false)
+          
+      } catch (error) {
+        setGsocOrgList([])
+        setLoading(false)
+      }
+    
+    }
+
+
+      useEffect(()=>{
+      if(token)
+      {
+        getOrgList()
+      }
+    },[token,year])
+        
+      const filteredOrgList = gsocOrgList.filter((org)=>{
+        const query = orgKeyword.toLowerCase()
+        return (
+          org.name.toLowerCase().includes(query) || org.category.toLowerCase().includes(query) || 
+          org.topics.some( topic => topic.toLowerCase().includes(query))
+        ) || org.technologies.some(tech=>tech.toLowerCase().includes(query))
+      }
+    
+    )
 
   return (
     <>
@@ -60,6 +105,19 @@ function GsocOrg() {
 
       </div>
 
+    {/* Search bar */}
+
+    <div className='mx-5 my-5'>
+    <SearchBar placeholder="Search by name, technology, catoagory and topic..."
+    
+    keyword = {orgKeyword}
+    setKeyword = {setOrgKeyword}
+    
+    
+    />
+
+    </div>
+
       {/* LOADER */}
 
       {
@@ -76,7 +134,7 @@ function GsocOrg() {
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
 
               {
-                gsocOrgList?.map((org, index) => (
+                filteredOrgList?.map((org, index) => (
 
                   <div
                     key={index}
@@ -282,10 +340,18 @@ function GsocOrg() {
 
             </div>
 
+            {filteredOrgList.length === 0 && (
+            
+                  <div className="text-center text-neutral-400 py-8">
+                      No organizations found.
+                  </div>
+            
+                )}
           </div>
 
         )
       }
+
 
     </>
   )

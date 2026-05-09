@@ -1,73 +1,121 @@
 import React, { useContext, useState, useEffect } from 'react'
 import { Appcontext } from '../context/AppContext'
-import { Search } from 'lucide-react'
 import Loader from '../components/Loader'
+import SearchBar from '../components/SearchBar'
 
 const Discover = () => {
-  const { repoName, setRepoName, searchList, randomRepo, loading } =
-    useContext(Appcontext)
 
-  const [repoList, setRepoList] = useState([])
+  const {
+    randomRepo,
+    loading,
+    setLoading,
+    backendUrl
+  } = useContext(Appcontext)
 
-  useEffect(() => {
-    if (repoName.trim().length === 0) {
-      setRepoList(randomRepo)
-    } else {
-      setRepoList(searchList)
+  const [repoName, setRepoName] = useState('')
+  const [searchList, setSearchList] = useState([])
+
+  const getSearchList = async () => {
+
+    try {
+
+      if (!repoName.trim()) {
+        setSearchList(randomRepo)
+        return
+      }
+
+      setLoading(true)
+
+      const response = await fetch(
+        `${backendUrl}/api/github/searchRepo?q=${repoName}`
+      )
+
+      const result = await response.json()
+
+      if (!result.success || result.data.length === 0) {
+        setSearchList([])
+      } else {
+        setSearchList(result.data)
+      }
+
+    } catch (error) {
+
+      console.log("Search API error:", error)
+      setSearchList([])
+
+    } finally {
+
+      setLoading(false)
+
     }
-  }, [repoName, randomRepo, searchList])
+  }
+
+  // Debounced Search
+  useEffect(() => {
+
+    const timer = setTimeout(() => {
+      getSearchList()
+    }, 600)
+
+    return () => clearTimeout(timer)
+
+  }, [repoName])
+
+  // Show random repos initially
+  useEffect(() => {
+
+    if (!repoName.trim()) {
+      setSearchList(randomRepo)
+    }
+
+  }, [randomRepo])
 
   return (
+
     <div className="text-white px-3 sm:px-6 py-6">
 
       {/* SEARCH BAR */}
-      <div className="relative w-full sm:max-w-md">
-        <Search
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"
-          size={18}
-        />
-        <input
-          type="text"
-          value={repoName}
-          onChange={(e) => setRepoName(e.target.value)}
-          placeholder="Find project according to your niche"
-          className="
-            w-full bg-transparent border border-neutral-500
-            pl-10 pr-3 py-2 outline-none 
-            hover:border-yellow-600 transition
-          "
-        />
-      </div>
+      <SearchBar
+        placeholder="Search Repository according to your niche..."
+        keyword={repoName}
+        setKeyword={setRepoName}
+      />
 
-      {/* TABLE HEADER (DESKTOP ONLY) */}
+      {/* TABLE HEADER */}
       <div className="hidden lg:flex items-center bg-black/80 w-full py-3 px-4 mt-6 text-sm font-medium">
+
         <div className="w-1/4">Repository</div>
         <div className="w-1/6">Language</div>
         <div className="w-1/4">Tags</div>
         <div className="w-1/10 text-right">Stars</div>
         <div className="w-1/10 text-right">Forks</div>
         <div className="w-1/10 text-right">Popularity</div>
+
       </div>
 
-      {/* 🔄 LOADER */}
+      {/* LOADER */}
       {loading && <Loader />}
 
-      {/* 📦 DATA */}
+      {/* DATA */}
       {!loading && (
+
         <div className="divide-y divide-white/10 mt-4">
 
-          {repoList.map((item, index) => (
+          {searchList.map((item, index) => (
+
             <div key={item.id || index}>
 
-              {/* ================= DESKTOP ROW ================= */}
+              {/* DESKTOP */}
               <div className="hidden lg:flex items-center bg-black/70 py-2 px-3 border border-white/10">
 
                 <div className="w-1/4 flex items-center gap-3">
+
                   <img
                     src={item.owner.avatar_url}
                     alt="avatar"
                     className="w-8 h-8 rounded-full border border-white/10"
                   />
+
                   <a
                     href={item.html_url}
                     target="_blank"
@@ -76,38 +124,53 @@ const Discover = () => {
                   >
                     {item.name}
                   </a>
+
                 </div>
 
-                <div className="w-1/6 text-sm">{item.language || "N/A"}</div>
+                <div className="w-1/6 text-sm">
+                  {item.language || "N/A"}
+                </div>
 
                 <div className="w-1/4 flex flex-wrap gap-2">
+
                   {item.tag?.slice(0, 3).map((t, i) => (
+
                     <span
                       key={i}
                       className="text-xs px-2 py-1 rounded-md bg-white/10 border border-white/20"
                     >
                       {t}
                     </span>
+
                   ))}
+
                 </div>
 
-                <div className="w-1/10 text-right text-sm">{item.stars}</div>
-                <div className="w-1/10 text-right text-sm">{item.fork}</div>
+                <div className="w-1/10 text-right text-sm">
+                  {item.stars}
+                </div>
+
+                <div className="w-1/10 text-right text-sm">
+                  {item.fork}
+                </div>
 
                 <div className="w-1/10 text-right">
                   <PopularityBadge value={item.popularity} />
                 </div>
+
               </div>
 
-              {/* ================= MOBILE CARD ================= */}
+              {/* MOBILE */}
               <div className="lg:hidden bg-black/70 border border-white/10 rounded-lg p-4 space-y-3">
 
                 <div className="flex items-center gap-3">
+
                   <img
                     src={item.owner.avatar_url}
                     alt="avatar"
                     className="w-8 h-8 rounded-full border border-white/10"
                   />
+
                   <a
                     href={item.html_url}
                     target="_blank"
@@ -116,45 +179,61 @@ const Discover = () => {
                   >
                     {item.name}
                   </a>
+
                 </div>
 
                 <div className="flex flex-wrap gap-2 text-sm">
+
                   <span className="bg-white/10 px-2 py-1 rounded">
                     {item.language || "N/A"}
                   </span>
+
                   <span className="bg-white/10 px-2 py-1 rounded">
                     ⭐ {item.stars}
                   </span>
+
                   <span className="bg-white/10 px-2 py-1 rounded">
                     🍴 {item.fork}
                   </span>
+
                 </div>
 
                 <div className="flex flex-wrap gap-2">
+
                   {item.tag?.slice(0, 3).map((t, i) => (
+
                     <span
                       key={i}
                       className="text-xs px-2 py-1 rounded-md bg-white/10 border border-white/20"
                     >
                       {t}
                     </span>
+
                   ))}
+
                 </div>
 
                 <PopularityBadge value={item.popularity} />
+
               </div>
 
             </div>
+
           ))}
 
           {/* EMPTY STATE */}
-          {repoList.length === 0 && (
+          {searchList.length === 0 && (
+
             <div className="text-center text-neutral-400 py-8">
               No repositories to show.
             </div>
+
           )}
+
         </div>
+
       )}
+
     </div>
   )
 }
@@ -164,6 +243,7 @@ export default Discover
 /* ---------- Popularity Badge ---------- */
 
 const PopularityBadge = ({ value }) => {
+
   const styles = {
     Legendary: "border-yellow-600 text-yellow-400 bg-yellow-600/10",
     Famous: "border-purple-600 text-purple-400 bg-purple-600/10",
@@ -172,6 +252,7 @@ const PopularityBadge = ({ value }) => {
   }
 
   return (
+
     <span
       className={`inline-block px-3 py-1 text-xs rounded-md border ${
         styles[value] || styles.Default
@@ -179,5 +260,6 @@ const PopularityBadge = ({ value }) => {
     >
       {value}
     </span>
+
   )
 }
