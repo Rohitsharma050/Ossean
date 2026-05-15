@@ -1,5 +1,7 @@
 import React, { useContext,useState,useEffect } from 'react'
 import { Appcontext } from '../context/AppContext'
+import { useQuery } from '@tanstack/react-query'
+import { ToastContainer,toast } from 'react-toastify'
 import {
   Mail,
   Twitter,
@@ -14,45 +16,39 @@ import SearchBar from '../components/SearchBar'
 
 function GsocOrg() {
   const [orgKeyword,setOrgKeyword] = useState("")
-  const [gsocOrgList,setGsocOrgList] = useState([])
   const [year,setYear] = useState(2026)
   const {
-    loading,token,setLoading,backendUrl
+token,backendUrl
   } = useContext(Appcontext)
 
 
   // Get orginaztion list year wise
-    const getOrgList = async ()=>{
+    async function getOrgList(){
       
-      try {
-        
-        setLoading(true)
         const response = await fetch(
           `${backendUrl}/api/github/getOrg?year=${year}`
         );
-     
-        const data = await response.json()
-        if(data.success)
-        {
-           setGsocOrgList(data.data)
+        const data = await response.json();
+
+        return data.data;
+    
+      }   
+       
+      const {
+
+          data:gsocOrgList = [],isLoading,error
+        
+        } = useQuery({
+          queryKey:["orgList",year],
+          queryFn:getOrgList,
+          enabled:!!token
         }
-    
-       setLoading(false)
-          
-      } catch (error) {
-        setGsocOrgList([])
-        setLoading(false)
-      }
-    
-    }
+      );
 
+       
+    
+     
 
-      useEffect(()=>{
-      if(token)
-      {
-        getOrgList()
-      }
-    },[token,year])
         
       const filteredOrgList = gsocOrgList.filter((org)=>{
         const query = orgKeyword.toLowerCase()
@@ -121,13 +117,13 @@ function GsocOrg() {
       {/* LOADER */}
 
       {
-        loading && <Loader />
+        isLoading && <Loader />
       }
 
       {/* ORGANIZATION LIST */}
 
       {
-        !loading && (
+        !isLoading && (
 
           <div className='min-h-screen p-4'>
 
@@ -355,6 +351,7 @@ function GsocOrg() {
 
     </>
   )
+
 }
 
 export default GsocOrg

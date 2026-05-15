@@ -9,9 +9,18 @@ import Discover from "./pages/Discover";
 import Feature from "./pages/Feature";
 import Bug from "./pages/Bug";
 import GsocOrg from "./pages/GsocOrg";
+
+import {QueryClient,QueryClientProvider} from "@tanstack/react-query"
+
+const queryClient = new QueryClient();
+
 export default function App() {
+
+  
   return (
     <div>
+      <QueryClientProvider client={queryClient}>
+
     <ToastContainer/>
     <Routes>
       <Route path="/" element={<Introduction />} />
@@ -25,8 +34,9 @@ export default function App() {
         <Route path="/feature" element={<Feature/>} />
         <Route path="/bug" element={<Bug/>} />
 
-      </Route>
+      </Route> 
     </Routes>
+      </QueryClientProvider>
     </div>
   );
 }
